@@ -80,10 +80,14 @@ class Appflow(object):
         """
         The main work function in the appflow.
         """
+        inputs["state"] = True
         results = inputs
         for task_instance in self.task_instances:
             # Get input results and put into outputs
-            results = task_instance(results)
+            if results["state"]:
+                results = task_instance(results)
+            else:
+                break
         return results
 
     def help(self):
@@ -97,11 +101,3 @@ class Appflow(object):
         Return the path of current task
         """
         return self.task_instance._task_path
-
-    @staticmethod
-    def tasks():
-        """
-        Return the available task list.
-        """
-        task_list = list(TASKS.keys())
-        return task_list

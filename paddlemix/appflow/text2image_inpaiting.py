@@ -50,7 +50,7 @@ class StableDiffusionInpaintTask(AppTask):
         inpaint_prompt = inputs.get("inpaint_prompt", None)
         assert inpaint_prompt is not None, "The inpaint_prompt is None"
 
-        self._org_size = image.size
+        inputs["org_size"] = image.size
         if isinstance(seg_masks, paddle.Tensor):
             merge_mask = paddle.sum(seg_masks, axis=0).unsqueeze(0)
             merge_mask = merge_mask > 0
@@ -89,7 +89,7 @@ class StableDiffusionInpaintTask(AppTask):
         The model output is tag ids, this function will convert the model output to raw text.
         """
 
-        image = inputs["result"].resize(self._org_size)
+        image = inputs["result"].resize(inputs["org_size"])
         inputs["result"] = image
-
+        inputs.pop("org_size", None)
         return inputs

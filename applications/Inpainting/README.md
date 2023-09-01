@@ -34,7 +34,7 @@ task = Appflow(app="inpainting",
                )
 paddle.seed(1024)
 image_pil = Image.open("bus.png").convert("RGB")
-result = task(image=image_pil,inpaint_prompt="bus is changed to A school bus parked on the roadside")
+result = task(image=image_pil,prompt="bus is changed to A school bus parked on the roadside")
 ```
 
 一些效果展示
@@ -75,6 +75,3 @@ image.save("a_yellow_cat.png")
 | ![overture-creations](https://github.com/LokeZhou/PaddleMIX/assets/13300429/fe13b5f6-e773-41c2-9660-3b2747575fc1) | Face of a yellow cat, high resolution, sitting on a park bench|![overture-creations-mask](https://github.com/LokeZhou/PaddleMIX/assets/13300429/8c3dbb3a-5a32-4c22-b66e-7b82fcd18b77) |![a_yellow_cat](https://github.com/LokeZhou/PaddleMIX/assets/13300429/094ba90a-35c0-4a50-ac1f-6e0ce91ea931) |
 
 </div>
-
-
-

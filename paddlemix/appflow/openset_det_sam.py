@@ -179,6 +179,9 @@ class OpenSetDetTask(AppTask):
             x0, y0, x1, y1 = int(x0), int(y0), int(x1), int(y1)
             boxes.append([x0, y0, x1, y1])
 
+        if len(boxes) < 1:
+            inputs["state"] = False
+
         boxes = np.array(boxes)
 
         inputs.pop("result", None)
