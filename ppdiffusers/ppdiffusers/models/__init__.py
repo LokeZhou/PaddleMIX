@@ -59,6 +59,9 @@ if is_paddle_available():
     _import_structure["modelscope_st_unet_video2video"] = ["Vid2VidSTUNet"]
     # NOTE, new add
     _import_structure["controlnet_sd3"] = ["SD3ControlNetModel", 'SD3MultiControlNetModel']
+    # NOTE, new add
+    _import_structure["vctrl"] = ["VCtrlModel"]
+    _import_structure["cogvideox_transformer_3d_vctrl"] = ["CogVideoXTransformer3DVCtrlModel"]
 
 
 if TYPE_CHECKING or PPDIFFUSERS_SLOW_IMPORT:
@@ -103,6 +106,8 @@ if TYPE_CHECKING or PPDIFFUSERS_SLOW_IMPORT:
         from .unet_spatio_temporal_condition import UNetSpatioTemporalConditionModel
         from .uvit_t2i import UViTT2IModel
         from .vq_model import VQModel
+        from .vctrl import VCtrlModel
+        from .cogvideox_transformer_3d_vctrl import CogVideoXTransformer3DVCtrlModel
 else:
     import sys
 

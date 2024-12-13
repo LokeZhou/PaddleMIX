@@ -101,7 +101,7 @@ else:
         "AudioLDM2UNet2DConditionModel",
     ]
     _import_structure["blip_diffusion"] = ["BlipDiffusionPipeline"]
-    _import_structure["cogvideo"] = ["CogVideoXPipeline"]
+    _import_structure["cogvideo"] = ["CogVideoXPipeline","CogVideoXVCtrlPipeline","CogVideoXVCtrlImageToVideoPipeline"]
     _import_structure["controlnet"].extend(
         [
             "BlipDiffusionControlNetPipeline",
@@ -376,7 +376,11 @@ if TYPE_CHECKING or PPDIFFUSERS_SLOW_IMPORT:
             AudioLDM2UNet2DConditionModel,
         )
         from .blip_diffusion import BlipDiffusionPipeline
-        from .cogvideo import CogVideoXPipeline
+        from .cogvideo import (
+            CogVideoXPipeline,
+            CogVideoXVCtrlPipeline,
+            CogVideoXVCtrlImageToVideoPipeline,
+        )
         from .controlnet import (
             BlipDiffusionControlNetPipeline,
             PaddleInferStableDiffusionControlNetPipeline,

@@ -95,9 +95,9 @@ class CogVideoXCausalConv3d(paddle.nn.Layer):
         self._clear_fake_context_parallel_cache()
         self.conv_cache = inputs[:, :, -self.time_kernel_size + 1:].clone()
         padding_2d = (self.width_pad, self.width_pad, self.height_pad, self
-            .height_pad)
+            .height_pad,0,0)
         inputs = paddle.nn.functional.pad(x=inputs, pad=padding_2d, mode=
-            'constant', value=0, pad_from_left_axis=False)
+            'constant', value=0, data_format='NCDHW')
         output = self.conv(inputs)
         return output
 
@@ -817,6 +817,7 @@ class AutoencoderKLCogVideoX(ModelMixin, ConfigMixin):
             h = paddle.concat(x=encoded_slices)
         else:
             h = self._encode(x)
+
         posterior = DiagonalGaussianDistribution(h)
         if not return_dict:
             return posterior,

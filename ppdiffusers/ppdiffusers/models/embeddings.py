@@ -21,6 +21,7 @@ from paddle import nn
 from ..utils import USE_PEFT_BACKEND
 from .activations import FP32SiLU, get_activation
 from .lora import LoRACompatibleLinear
+import warnings
 
 
 def get_timestep_embedding(
@@ -283,6 +284,7 @@ class TimestepEmbedding(nn.Layer):
     def forward(self, sample, condition=None):
         if condition is not None:
             sample = sample + self.cond_proj(condition.cast(sample.dtype))  # NEW ADD cast dtype
+
         sample = self.linear_1(sample)
 
         if self.act is not None:
@@ -1026,8 +1028,6 @@ class CogVideoXPatchEmbed(paddle.nn.Layer):
                 Input image embeddings. Expected shape: (batch_size, num_frames, channels, height, width).
         """
         text_embeds = self.text_proj(text_embeds)
-        # import numpy as np
-        # text_embeds = paddle.to_tensor(np.load("../CogVideo/inference/text_embeds.npy"), dtype=paddle.float32)
 
         batch, num_frames, channels, height, width = image_embeds.shape
         image_embeds = image_embeds.reshape([-1, channels, height, width])
@@ -1041,7 +1041,7 @@ class CogVideoXPatchEmbed(paddle.nn.Layer):
         if (self.use_positional_embeddings or self.use_learned_positional_embeddings):
             if self.use_learned_positional_embeddings and (self.
                 sample_width != width or self.sample_height != height):
-                raise ValueError(
+                warnings.warn(
                     "It is currently not possible to generate videos at a different resolution that the defaults. This should only be the case with 'THUDM/CogVideoX-5b-I2V'.If you think this is incorrect, please open an issue at https://github.com/huggingface/diffusers/issues."
                     )
             pre_time_compression_frames = (num_frames - 1
@@ -1126,7 +1126,7 @@ def get_3d_rotary_pos_embed(embed_dim, crops_coords, grid_size,
     freqs = broadcast((freqs_t[:, None, None, :], freqs_h[None, :, None, :],
         freqs_w[None, None, :, :]), dim=-1)
     t, h, w, d = tuple(freqs.shape)
-    freqs = freqs.view(t * h * w, d)
+    freqs = freqs.reshape([t * h * w, d])
     sin = freqs.sin()
     cos = freqs.cos()
     if use_real:
@@ -1135,3 +1135,47 @@ def get_3d_rotary_pos_embed(embed_dim, crops_coords, grid_size,
         freqs_cis = paddle.complex(paddle.ones_like(x=freqs) * paddle.cos(
             freqs), paddle.ones_like(x=freqs) * paddle.sin(freqs))
         return freqs_cis
+    
+def apply_rotary_emb(x: paddle.Tensor, freqs_cis: Union[paddle.Tensor,
+    Tuple[paddle.Tensor]], use_real: bool=True, use_real_unbind_dim: int=-1
+    ) ->Tuple[paddle.Tensor, paddle.Tensor]:
+    """
+    Apply rotary embeddings to input tensors using the given frequency tensor. This function applies rotary embeddings
+    to the given query or key 'x' tensors using the provided frequency tensor 'freqs_cis'. The input tensors are
+    reshaped as complex numbers, and the frequency tensor is reshaped for broadcasting compatibility. The resulting
+    tensors contain rotary embeddings and are returned as real tensors.
+
+    Args:
+        x (`torch.Tensor`):
+            Query or key tensor to apply rotary embeddings. [B, H, S, D] xk (torch.Tensor): Key tensor to apply
+        freqs_cis (`Tuple[torch.Tensor]`): Precomputed frequency tensor for complex exponentials. ([S, D], [S, D],)
+
+    Returns:
+        Tuple[torch.Tensor, torch.Tensor]: Tuple of modified query tensor and key tensor with rotary embeddings.
+    """
+    if use_real:
+        cos, sin = freqs_cis
+        cos = cos[None, None]
+        sin = sin[None, None]
+        if use_real_unbind_dim == -1:
+            x_real, x_imag = x.reshape([*tuple(x.shape)[:-1], -1, 2]).unbind(axis
+                =-1)
+            x_rotated = paddle.stack(x=[-x_imag, x_real], axis=-1).flatten(
+                start_axis=3)
+        elif use_real_unbind_dim == -2:
+            x_real, x_imag = x.reshape([*tuple(x.shape)[:-1], 2, -1]).unbind(axis
+                =-2)
+            x_rotated = paddle.concat(x=[-x_imag, x_real], axis=-1)
+        else:
+            raise ValueError(
+                f'`use_real_unbind_dim={use_real_unbind_dim}` but should be -1 or -2.'
+                )
+        out = (x.astype(dtype='float32') * cos + x_rotated.astype(dtype=
+            'float32') * sin).to(x.dtype)
+        return out
+    else:
+        x_rotated = paddle.as_complex(x=x.astype(dtype='float32').reshape(*
+            tuple(x.shape)[:-1], -1, 2))
+        freqs_cis = freqs_cis.unsqueeze(axis=2)
+        x_out = paddle.as_real(x=x_rotated * freqs_cis).flatten(start_axis=3)
+        return x_out.astype(dtype=x.dtype)

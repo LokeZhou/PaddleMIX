@@ -114,6 +114,7 @@ else:
             "AutoencoderKLTemporalDecoder",
             "AutoencoderTiny",
             "CogVideoXTransformer3DModel",
+            "CogVideoXTransformer3DVCtrlModel",
             "ConsistencyDecoderVAE",
             "ControlNetModel",
             "Kandinsky3UNet",
@@ -148,6 +149,8 @@ else:
             # new add
             "SD3ControlNetModel",
             "SD3MultiControlNetModel",
+            #new add
+            "VCtrlModel",
         ]
     )
 
@@ -167,6 +170,8 @@ else:
             "AutoPipelineForInpainting",
             "AutoPipelineForText2Image",
             "ConsistencyModelPipeline",
+            "CogVideoXVCtrlPipeline",
+            "CogVideoXVCtrlImageToVideoPipeline",
             "DanceDiffusionPipeline",
             "DDIMPipeline",
             "DDPMPipeline",
@@ -496,6 +501,7 @@ if TYPE_CHECKING or PPDIFFUSERS_SLOW_IMPORT:
             AutoencoderKLTemporalDecoder,
             AutoencoderTiny,
             CogVideoXTransformer3DModel,
+            CogVideoXTransformer3DVCtrlModel,
             ConsistencyDecoderVAE,
             ControlNetModel,
             DiTLLaMA2DModel,
@@ -526,6 +532,7 @@ if TYPE_CHECKING or PPDIFFUSERS_SLOW_IMPORT:
             UViTT2IModel,
             Vid2VidSTUNet,
             VQModel,
+            VCtrlModel,
         )
         from .optimization import (
             get_constant_schedule,
@@ -558,6 +565,8 @@ if TYPE_CHECKING or PPDIFFUSERS_SLOW_IMPORT:
             RePaintPipeline,
             ScoreSdeVePipeline,
             VideoToVideoModelscopePipeline,
+            CogVideoXVCtrlPipeline,
+            CogVideoXVCtrlImageToVideoPipeline,
         )
         from .schedulers import (
             CMStochasticIterativeScheduler,

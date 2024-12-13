@@ -18,7 +18,6 @@ import math
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import paddle
-# from paddlenlp.transformers import T5EncoderModel, T5Tokenizer
 from ppdiffusers.transformers import T5EncoderModel, T5Tokenizer
 
 from ...callbacks import MultiPipelineCallbacks, PipelineCallback

@@ -262,30 +262,30 @@ class CogVideoXDownsample3D(paddle.nn.Layer):
     def forward(self, x: paddle.Tensor) ->paddle.Tensor:
         if self.compress_time:
             batch_size, channels, frames, height, width = tuple(x.shape)
-            x = x.transpose(perm=[0, 3, 4, 1, 2]).reshape(batch_size *
-                height * width, channels, frames)
+            x = x.transpose(perm=[0, 3, 4, 1, 2]).reshape([batch_size *
+                height * width, channels, frames])
             if tuple(x.shape)[-1] % 2 == 1:
                 x_first, x_rest = x[..., 0], x[..., 1:]
                 if tuple(x_rest.shape)[-1] > 0:
                     x_rest = paddle.nn.functional.avg_pool1d(kernel_size=2,
                         stride=2, x=x_rest, exclusive=False)
                 x = paddle.concat(x=[x_first[..., None], x_rest], axis=-1)
-                x = x.reshape(batch_size, height, width, channels, tuple(x.
-                    shape)[-1]).transpose(perm=[0, 3, 4, 1, 2])
+                x = x.reshape([batch_size, height, width, channels, tuple(x.
+                    shape)[-1]]).transpose(perm=[0, 3, 4, 1, 2])
             else:
                 x = paddle.nn.functional.avg_pool1d(kernel_size=2, stride=2,
                     x=x, exclusive=False)
-                x = x.reshape(batch_size, height, width, channels, tuple(x.
-                    shape)[-1]).transpose(perm=[0, 3, 4, 1, 2])
-        pad = 0, 1, 0, 1
+                x = x.reshape([batch_size, height, width, channels, tuple(x.
+                    shape)[-1]]).transpose(perm=[0, 3, 4, 1, 2])
+        pad = (0, 1, 0, 1,0,0)
         x = paddle.nn.functional.pad(x=x, pad=pad, mode='constant', value=0,
-            pad_from_left_axis=False)
+            data_format='NCDHW')
         batch_size, channels, frames, height, width = tuple(x.shape)
-        x = x.transpose(perm=[0, 2, 1, 3, 4]).reshape(batch_size * frames,
-            channels, height, width)
+        x = x.transpose(perm=[0, 2, 1, 3, 4]).reshape([batch_size * frames,
+            channels, height, width])
         x = self.conv(x)
-        x = x.reshape(batch_size, frames, tuple(x.shape)[1], tuple(x.shape)
-            [2], tuple(x.shape)[3]).transpose(perm=[0, 2, 1, 3, 4])
+        x = x.reshape([batch_size, frames, tuple(x.shape)[1], tuple(x.shape)
+            [2], tuple(x.shape)[3]]).transpose(perm=[0, 2, 1, 3, 4])
         return x
 
 
